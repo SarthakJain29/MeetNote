@@ -1,6 +1,5 @@
 import OpenAI from "openai";
 import dotenv from "dotenv";
-import { supabase } from '@/lib/supabaseClient'
 dotenv.config()
 
 
@@ -14,11 +13,6 @@ export async function POST(req) {
     messages: [{ role: "user", content: prompt }],
   });
   const text = completion.choices[0].message.content;
-
-  //storing summaries in db
-  const { data: insertData, error } = await supabase
-  .from('meetings')
-  .insert([{ transcript, summary: text }])
 
   return Response.json({ summary: text });
 }
