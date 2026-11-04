@@ -74,7 +74,7 @@ export function Studio() {
     <div className="space-y-16">
       <section className="mx-auto max-w-3xl pt-8 text-center">
         <p className="eyebrow">AI meeting notes · zero setup</p>
-        <h1 className="mt-4 font-display text-5xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-7xl">
+        <h1 className="mt-4 font-display text-5xl font-extrabold leading-[1.05] tracking-tight [text-wrap:balance] text-white sm:text-7xl">
           Meetings in. <span className="grad-text">Clarity out.</span>
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-lg text-zinc-400">

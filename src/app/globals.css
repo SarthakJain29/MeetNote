@@ -23,6 +23,7 @@ body {
   .skeleton { @apply rounded-xl bg-[linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.12),rgba(255,255,255,.04))] bg-[length:200%_100%] animate-shimmer; }
 }
 
+.aurora { isolation: isolate; }
 .aurora::before, .aurora::after {
   content: ""; position: fixed; z-index: -1; border-radius: 9999px; filter: blur(110px); opacity: .5; pointer-events: none;
 }
