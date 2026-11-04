@@ -82,6 +82,7 @@ No keys → mock mode (offline heuristics). Never commit `.env*` (only `.env.exa
 | `gemini-2.0-flash` and `gemini-2.5-flash` returned 404 "no longer available" | Listed models via the API (`/v1beta/models`) | Switched default to the `gemini-flash-latest` alias. Gemini was intermittently 503/429 (high demand/quota) during testing — cascade to Groq/mock handled it. Nothing needed. |
 | Groq `llama-3.3-70b-versatile` absent from model list | Listed models | Default changed to `openai/gpt-oss-120b`; verified live. |
 | `next/font/google` can't be assumed offline | – | Used system fonts. |
+| Live Gemini analysis never succeeded (retried after keys were updated) | One live call through the app + one direct API call | Both returned `429 RESOURCE_EXHAUSTED`: free-tier limit of 20 generate_content requests/day for the `gemini-flash-latest` alias (currently `gemini-3.8-flash`), resets in ~11h. The Gemini client code is covered by stubbed tests, but is unverified live. The app fell back correctly. **You:** retry after the quota resets, or use a key from a project with unused quota, or set `GEMINI_MODEL` to another flash model. Groq is verified live. |
 | Screenshots | Playwright against the real app | Captured in `docs/`. Re-capture after UI changes. |
 
 ## 8. Progress
