@@ -19,7 +19,7 @@ const POS = ["great", "excited", "love", "good", "awesome", "perfect", "thanks",
 const NEG = ["blocked", "worried", "concern", "delay", "problem", "risk", "unhappy", "angry", "frustrat", "behind", "issue", "fail"];
 
 const stripTask = (s: string) =>
-  s.replace(/^(ok(ay)?|yes|yeah|sure|great|so|and|then|alright)[,.]?\s+/i, "").replace(/\s+/g, " ").trim();
+  s.replace(/^((ok(ay)?|yes|yeah|sure|great|so|and|then|alright|good question|thanks)[,.]?\s+)+/i, "").replace(/\s+/g, " ").trim();
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** Deterministic, offline heuristic analysis. Lets the whole app work with zero API keys. */
@@ -31,7 +31,9 @@ export function mockAnalyze(transcript: string): Analysis {
   // term frequency -> topics and sentence scoring
   const freq = new Map<string, number>();
   for (const w of words(transcript)) freq.set(w, (freq.get(w) ?? 0) + 1);
-  const topics = [...freq.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).filter(([, n]) => n > 1).map(([w]) => cap(w));
+  const speakerNames = new Set(turns.map((t) => t.speaker?.toLowerCase()).filter(Boolean) as string[]);
+  const names = [...new Set(turns.map((t) => t.speaker).filter(Boolean))] as string[];
+  const topics = [...freq.entries()].filter(([w]) => !speakerNames.has(w) && !names.some((n) => n.toLowerCase().split(" ").includes(w))).sort((a, b) => b[1] - a[1]).slice(0, 6).filter(([, n]) => n > 1).map(([w]) => cap(w));
 
   const scored = flat
     .map((x, i) => {
@@ -55,7 +57,9 @@ export function mockAnalyze(transcript: string): Analysis {
       const task = stripTask(x.s);
       const due = DUE_RE.exec(x.s)?.[0] ?? null;
       const priority: Priority = /\b(urgent|asap|critical|blocker|today|eod)\b/i.test(x.s) ? "high" : /\b(eventually|nice to have|someday|when you can)\b/i.test(x.s) ? "low" : "medium";
-      return { task, owner: x.speaker, due, priority };
+      // "Can you ... , Dana?" => the addressed person owns it, not the speaker
+      const addressed = /^(can|could) you\b|\bcan you\b/i.test(x.s) ? names.find((n) => x.s.includes(n.split(" ")[0]) && n !== x.speaker) : undefined;
+      return { task: cap(task), owner: addressed ?? x.speaker, due, priority, raw: x.s };
     })
     .filter((a) => {
       const k = a.task.toLowerCase();
@@ -65,7 +69,8 @@ export function mockAnalyze(transcript: string): Analysis {
     })
     .slice(0, 8);
 
-  const openQuestions = flat.filter((x) => x.s.endsWith("?") && x.s.split(" ").length >= 5).map((x) => x.s).slice(0, 4);
+  const taskSentences = new Set(items.map((i) => i.raw));
+  const openQuestions = flat.filter((x) => x.s.endsWith("?") && x.s.split(" ").length >= 5 && !taskSentences.has(x.s) && !/^(can|could) you\b/i.test(stripTask(x.s))).map((x) => x.s).slice(0, 4);
 
   const pos = POS.filter((w) => lower.includes(w)).length;
   const neg = NEG.filter((w) => lower.includes(w)).length;
@@ -83,7 +88,7 @@ export function mockAnalyze(transcript: string): Analysis {
     summary,
     keyPoints,
     decisions,
-    actionItems: items,
+    actionItems: items.map(({ raw: _raw, ...a }) => { void _raw; return a; }),
     openQuestions,
     topics,
     sentiment,

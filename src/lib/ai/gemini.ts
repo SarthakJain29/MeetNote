@@ -7,7 +7,7 @@ interface GeminiResponse {
   candidates?: { content?: { parts?: { text?: string }[] } }[];
 }
 
-export function createGemini(apiKey: string, model = "gemini-2.0-flash"): AIProvider {
+export function createGemini(apiKey: string, model = "gemini-flash-latest"): AIProvider {
   const call = async (system: string, user: string, json: boolean) => {
     const data = (await postJson(
       `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,

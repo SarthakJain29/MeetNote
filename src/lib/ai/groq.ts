@@ -7,7 +7,7 @@ interface ChatResponse {
   choices?: { message?: { content?: string } }[];
 }
 
-export function createGroq(apiKey: string, model = "llama-3.3-70b-versatile"): AIProvider {
+export function createGroq(apiKey: string, model = "openai/gpt-oss-120b"): AIProvider {
   const call = async (system: string, user: string, json: boolean) => {
     const data = (await postJson(
       "https://api.groq.com/openai/v1/chat/completions",

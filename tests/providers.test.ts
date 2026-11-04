@@ -22,6 +22,14 @@ describe("provider selection", () => {
     expect(r.provider).toBe("mock");
     expect(r.warning).toMatch(/groq failed/);
   });
+  it("tries the next real provider before mock", async () => {
+    const reply = { choices: [{ message: { content: JSON.stringify({ summary: "from groq" }) } }] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) =>
+      String(url).includes("groq") ? Response.json(reply) : new Response("down", { status: 503 })));
+    const r = await analyzeTranscript(T, { GEMINI_API_KEY: "k", GROQ_API_KEY: "g" });
+    expect(r.provider).toBe("groq");
+    expect(r.warning).toMatch(/gemini failed/);
+  });
   it("parses a successful groq reply", async () => {
     const reply = { choices: [{ message: { content: JSON.stringify({ summary: "ok", title: "t" }) } }] };
     vi.stubGlobal("fetch", vi.fn(async () => Response.json(reply)));
